@@ -28,6 +28,7 @@ namespace Player
         public static HashSet<int> updateFactoryIds = new HashSet<int>();
 
         public static FloydWarshall floydWarshall;
+        public static FloydNeighbor floydNeighbor;
 
         public static List<effectiveTroopEntry> effectivePlayerTroops = new List<effectiveTroopEntry>();
         public static List<(Factory sourceFactory, Factory targetFactory, int neededCyborgs)> waitingFactories = new List<(Factory sourceFactory, Factory targetFactory, int neededCyborgs)>();
@@ -92,6 +93,7 @@ namespace Player
                 printStates();
 
                 floydWarshall = new FloydWarshall(factoryCount, distances, factories);
+                floydNeighbor = new FloydNeighbor(factoryCount, distances);
 
 
                 var pickedActions = new List<Action>();
@@ -1377,6 +1379,7 @@ namespace Player
 
         }
 
+
         public List<Factory> Path(Factory start, Factory target, FactoriesHelper factories)
         {
             List<Factory> path = new List<Factory>();
@@ -1403,6 +1406,71 @@ namespace Player
             return path;
         }
 
+        internal int Dist(Factory factory, Factory other)
+        {
+            return dist[factory.Id, other.Id];
+        }
+    }
+
+    public class FloydNeighbor
+    {
+        private int[,] dist;
+        private int[,] next;
+
+        public FloydNeighbor(int factoryCount, List<distanceStruct> distancesList)
+        {
+            dist = new int[factoryCount, factoryCount];
+            next = new int[factoryCount, factoryCount];
+
+            for (int y = 0; y < factoryCount; y++)
+            {
+                for (int x = 0; x < factoryCount; x++)
+                {
+                    dist[y, x] = int.MaxValue;
+                }
+            }
+
+            foreach (var distance in distancesList)
+            {
+                dist[distance.factory1, distance.factory2] = distance.distance;
+                dist[distance.factory2, distance.factory1] = distance.distance;
+                next[distance.factory1, distance.factory2] = distance.factory2;
+                next[distance.factory2, distance.factory1] = distance.factory1;
+            }
+
+            for (int i = 0; i < factoryCount; i++)
+            {
+                dist[i, i] = 0;
+                next[i, i] = i;
+            }
+
+
+            for (int k = 0; k < factoryCount; k++)
+            {
+                for (int source = 0; source < factoryCount; source++)
+                {
+                    for (int target = 0; target < factoryCount; target++)
+                    {
+                        // skippe schritte zu sich selbst 
+                        if (source == k || target == k)
+                            continue;
+
+                        int costViaNodeK = dist[source, k] + dist[k, target];
+                        //+1 weil wir wieder los müssen
+                        if (k != target)
+                            costViaNodeK += 0;
+                        // maximiere hops, bei gleicher strecke
+                        if (costViaNodeK < dist[source, target])
+                        {
+                            dist[source, target] = costViaNodeK;
+                            next[source, target] = next[source, k];
+                        }
+
+                    }
+                }
+            }
+        }
+
         public List<Factory> Neighbors(Factory factory, FactoriesHelper helper)
         {
             HashSet<Factory> neighbors = new HashSet<Factory>();
@@ -1416,12 +1484,8 @@ namespace Player
             neighbors.Remove(factory);
             return neighbors.ToList();
         }
-
-        internal int Dist(Factory factory, Factory other)
-        {
-            return dist[factory.Id, other.Id];
-        }
     }
+
 
     public class Factory
     {
@@ -1679,7 +1743,7 @@ namespace Player
 
         public List<Factory> NeighborsOrderedByDistance(params Owner[] owner)
         {
-            return floydWarshall.Neighbors(this, factories).Where(fac => owner.Count() == 0 || owner.Contains(fac.Owner)).OrderBy(fac => fac.Distance(this)).ToList();
+            return floydNeighbor.Neighbors(this, factories).Where(fac => owner.Count() == 0 || owner.Contains(fac.Owner)).OrderBy(fac => fac.Distance(this)).ToList();
         }
 
         public int WillFallIn()

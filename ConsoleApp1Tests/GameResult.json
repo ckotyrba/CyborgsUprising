@@ -1,0 +1,128 @@
+﻿{
+    "frames": [
+        {
+            "gameInformation": "",
+            "summary": "",
+            "view": " 0\nGhostInTheCell\n11\n16000 6500 9 2\n0 0 8000 3250 700\n1 1 6214 4169 700\n2 1 9786 2331 700\n3 0 3878 4865 700\n4 0 12122 1635 700\n5 2 4939 1548 700\n6 2 11061 4952 700\n7 1 7293 5978 700\n8 1 8707 522 700\n0 2\n0 2\n0\n0\n-1 0 0 0\n0 27 1 0\n1 27 1 0\n-1 0 0 0\n-1 0 0 0\n-1 6 2 0\n-1 6 2 0\n-1 5 1 0\n-1 5 1 0\n",
+            "keyframe": true,
+            "agentId": -1
+        },
+        {
+            "gameInformation": "",
+            "stdout": "MSG Player:1 Gegner:1;MOVE 1 5 7;MOVE 1 7 6;INC 1\n",
+            "stderr": "debug:^9debug:$\ndebug:^36debug:$\ndebug:^0 1 1debug:$\ndebug:^0 2 1debug:$\ndebug:^0 3 4debug:$\ndebug:^0 4 4debug:$\ndebug:^0 5 3debug:$\ndebug:^0 6 3debug:$\ndebug:^0 7 2debug:$\ndebug:^0 8 2debug:$\ndebug:^1 2 3debug:$\ndebug:^1 3 1debug:$\ndebug:^1 4 6debug:$\ndebug:^1 5 2debug:$\ndebug:^1 6 4debug:$\ndebug:^1 7 1debug:$\ndebug:^1 8 4debug:$\ndebug:^2 3 6debug:$\ndebug:^2 4 1debug:$\ndebug:^2 5 4debug:$\ndebug:^2 6 2debug:$\ndebug:^2 7 4debug:$\ndebug:^2 8 1debug:$\ndebug:^3 4 9debug:$\ndebug:^3 5 3debug:$\ndebug:^3 6 7debug:$\ndebug:^3 7 3debug:$\ndebug:^3 8 6debug:$\ndebug:^4 5 7debug:$\ndebug:^4 6 3debug:$\ndebug:^4 7 6debug:$\ndebug:^4 8 3debug:$\ndebug:^5 6 7debug:$\ndebug:^5 7 5debug:$\ndebug:^5 8 3debug:$\ndebug:^6 7 3debug:$\ndebug:^6 8 5debug:$\ndebug:^7 8 5debug:$\nRound: 1\ndebug:^9debug:$\ndebug:^0 FACTORY 0 0 0 0 0debug:$\ndebug:^1 FACTORY 1 27 1 0 0debug:$\ndebug:^2 FACTORY -1 27 1 0 0debug:$\ndebug:^3 FACTORY 0 0 0 0 0debug:$\ndebug:^4 FACTORY 0 0 0 0 0debug:$\ndebug:^5 FACTORY 0 6 2 0 0debug:$\ndebug:^6 FACTORY 0 6 2 0 0debug:$\ndebug:^7 FACTORY 0 5 1 0 0debug:$\ndebug:^8 FACTORY 0 5 1 0 0debug:$\nprotect 1 needed 0 mindestensEntfernt 2147483647\nUpdate 1:costs\u003d18 Attack 1\u003d\u003e5:7:costs\u003d3.5\nAttack 1\u003d\u003e5:7:costs\u003d3.5 Attack 1\u003d\u003e7:6:costs\u003d16\nUpdate 1:costs\u003d10 Attack 1\u003d\u003e7:6:costs\u003d6\nnehme action: Attack 1\u003d\u003e5:7\n------Attack 1\u003d\u003e5:7\nUpdate 1:costs\u003d10 Attack 1\u003d\u003e7:6:costs\u003d6\nnehme action: Attack 1\u003d\u003e7:6\n------Attack 1\u003d\u003e7:6\nnehme action: Update 1\n------Update 1\npossibleACtions leeer\n~~~Duration\u003d45\nAttack 1\u003d\u003e5:7\nAttack 1\u003d\u003e7:6\nUpdate 1\nRound: 2",
+            "view": " 1\n",
+            "keyframe": false,
+            "agentId": 0
+        },
+        {
+            "gameInformation": "",
+            "stdout": "MOVE 2 8 6;MOVE 2 4 10;MOVE 2 8 11\n",
+            "summary": "",
+            "view": " 2\n19 2 Player:1 Gegner:1\n28 2\n4\n9 0 1 5 7 2\n10 0 1 7 6 1\n11 1 2 8 17 1\n12 1 2 4 10 1\n0\n-1 0 0 0\n0 6 2 0\n1 1 1 0\n-1 0 0 0\n-1 0 0 0\n-1 6 2 0\n-1 6 2 0\n-1 5 1 0\n-1 5 1 0\n",
+            "keyframe": true,
+            "agentId": 1
+        },
+        {
+            "gameInformation": "",
+            "stdout": "MSG Player:2 Gegner:1;WAIT\n",
+            "stderr": "debug:^13debug:$\ndebug:^0 FACTORY 0 0 0 0 0debug:$\ndebug:^1 FACTORY 1 6 2 0 0debug:$\ndebug:^2 FACTORY -1 1 1 0 0debug:$\ndebug:^3 FACTORY 0 0 0 0 0debug:$\ndebug:^4 FACTORY 0 0 0 0 0debug:$\ndebug:^5 FACTORY 0 6 2 0 0debug:$\ndebug:^6 FACTORY 0 6 2 0 0debug:$\ndebug:^7 FACTORY 0 5 1 0 0debug:$\ndebug:^8 FACTORY 0 5 1 0 0debug:$\ndebug:^9 TROOP 1 1 5 7 2debug:$\ndebug:^10 TROOP 1 1 7 6 1debug:$\ndebug:^11 TROOP -1 2 8 17 1debug:$\ndebug:^12 TROOP -1 2 4 10 1debug:$\nprotect 1 needed 0 mindestensEntfernt 2147483647\npossibleACtions leeer\n~~~Duration\u003d46\nRound: 3",
+            "view": " 3\n",
+            "keyframe": false,
+            "agentId": 0
+        },
+        {
+            "gameInformation": "",
+            "stdout": "BOMB 2 1\n",
+            "summary": "",
+            "view": " 4\n16 2 Player:2 Gegner:1\n24 1\n0\n1\n14 1 2 1 3\n-1 0 0 0\n0 8 2 0\n1 2 1 0\n-1 0 0 0\n1 10 0 0\n-1 6 2 0\n-1 6 2 0\n0 1 1 0\n1 12 1 0\n",
+            "keyframe": true,
+            "agentId": 1
+        },
+        {
+            "gameInformation": "",
+            "stdout": "MSG Player:3 Gegner:2;WAIT\n",
+            "stderr": "debug:^11debug:$\ndebug:^0 FACTORY 0 0 0 0 0debug:$\ndebug:^1 FACTORY 1 8 2 0 0debug:$\ndebug:^2 FACTORY -1 2 1 0 0debug:$\ndebug:^3 FACTORY 0 0 0 0 0debug:$\ndebug:^4 FACTORY -1 10 0 0 0debug:$\ndebug:^5 FACTORY 0 6 2 0 0debug:$\ndebug:^6 FACTORY 0 6 2 0 0debug:$\ndebug:^7 FACTORY 1 1 1 0 0debug:$\ndebug:^8 FACTORY -1 12 1 0 0debug:$\ndebug:^9 TROOP 1 1 5 7 1debug:$\ndebug:^14 BOMB -1 2 -1 -1 0debug:$\nBomb 14 Opponent2\u003d\u003e alive: 0 possibleTargets: 1,5,7\nprotect 1 needed 0 mindestensEntfernt 2147483647\nprotect 7 needed 0 mindestensEntfernt 2147483647\npossibleACtions leeer\n~~~Duration\u003d53\nRound: 4",
+            "view": " 5\n",
+            "keyframe": false,
+            "agentId": 0
+        },
+        {
+            "gameInformation": "",
+            "stdout": "MOVE 8 5 8;MOVE 4 6 7\n",
+            "summary": "",
+            "view": " 6\n13 2 Player:3 Gegner:2\n26 1\n2\n15 1 8 5 8 3\n16 1 4 6 7 3\n0\n-1 0 0 0\n0 10 2 0\n1 3 1 0\n-1 0 0 0\n1 3 0 0\n0 1 2 0\n-1 6 2 0\n0 2 1 0\n1 5 1 0\n",
+            "keyframe": true,
+            "agentId": 1
+        },
+        {
+            "gameInformation": "",
+            "stdout": "MSG Player:5 Gegner:2;MOVE 1 7 10\n",
+            "stderr": "debug:^12debug:$\ndebug:^0 FACTORY 0 0 0 0 0debug:$\ndebug:^1 FACTORY 1 10 2 0 0debug:$\ndebug:^2 FACTORY -1 3 1 0 0debug:$\ndebug:^3 FACTORY 0 0 0 0 0debug:$\ndebug:^4 FACTORY -1 3 0 0 0debug:$\ndebug:^5 FACTORY 1 1 2 0 0debug:$\ndebug:^6 FACTORY 0 6 2 0 0debug:$\ndebug:^7 FACTORY 1 2 1 0 0debug:$\ndebug:^8 FACTORY -1 5 1 0 0debug:$\ndebug:^15 TROOP -1 8 5 8 3debug:$\ndebug:^16 TROOP -1 4 6 7 3debug:$\ndebug:^14 BOMB -1 2 -1 -1 0debug:$\nBomb 14 Opponent2\u003d\u003e alive: 1 possibleTargets: 1,5,7\nprotect 1 needed 0 mindestensEntfernt 2147483647\nprotect 5 needed 1 mindestensEntfernt 3\nprotect 7 needed 0 mindestensEntfernt 2147483647\npossibleACtions leeer\n~~~Duration\u003d54\nBomb detection 1\u003d\u003e7:10\nRound: 5",
+            "view": " 7\n",
+            "keyframe": false,
+            "agentId": 0
+        },
+        {
+            "gameInformation": "",
+            "stdout": "MOVE 2 1 1\n",
+            "summary": "",
+            "view": " 8\n18 2 Player:5 Gegner:2\n28 1\n2\n17 0 1 7 10 1\n18 1 2 1 1 3\n0\n-1 0 0 0\n0 2 2 0\n1 3 1 0\n-1 0 0 0\n1 3 0 0\n0 3 2 0\n-1 6 2 0\n0 3 1 0\n1 6 1 0\n",
+            "keyframe": true,
+            "agentId": 1
+        },
+        {
+            "gameInformation": "",
+            "stdout": "MSG Player:5 Gegner:2;MOVE 7 1 3\n",
+            "stderr": "debug:^14debug:$\ndebug:^0 FACTORY 0 0 0 0 0debug:$\ndebug:^1 FACTORY 1 2 2 0 0debug:$\ndebug:^2 FACTORY -1 3 1 0 0debug:$\ndebug:^3 FACTORY 0 0 0 0 0debug:$\ndebug:^4 FACTORY -1 3 0 0 0debug:$\ndebug:^5 FACTORY 1 3 2 0 0debug:$\ndebug:^6 FACTORY 0 6 2 0 0debug:$\ndebug:^7 FACTORY 1 3 1 0 0debug:$\ndebug:^8 FACTORY -1 6 1 0 0debug:$\ndebug:^15 TROOP -1 8 5 8 2debug:$\ndebug:^16 TROOP -1 4 6 7 2debug:$\ndebug:^17 TROOP 1 1 7 10 1debug:$\ndebug:^18 TROOP -1 2 1 1 3debug:$\ndebug:^14 BOMB -1 2 -1 -1 0debug:$\nBomb 14 Opponent2\u003d\u003e alive: 2 possibleTargets: 1,5,7\nprotect 1 needed 0 mindestensEntfernt 3\nprotect 5 needed 1 mindestensEntfernt 2\nprotect 7 needed 0 mindestensEntfernt 2147483647\npossibleACtions leeer\n~~~Duration\u003d55\nBomb detection 7\u003d\u003e1:3\nRound: 6",
+            "view": " 9\n",
+            "keyframe": false,
+            "agentId": 0
+        },
+        {
+            "gameInformation": "",
+            "stdout": "WAIT\n",
+            "summary": "",
+            "view": " 10\n19 2 Player:5 Gegner:2\n30 1\n1\n19 0 7 1 3 1\n0\n-1 0 0 0\n0 0 2 5\n1 4 1 0\n-1 0 0 0\n1 3 0 0\n0 5 2 0\n-1 6 2 0\n0 11 1 0\n1 7 1 0\n",
+            "keyframe": true,
+            "agentId": 1
+        },
+        {
+            "gameInformation": "",
+            "stdout": "MSG Player:5 Gegner:2;INC 7\n",
+            "stderr": "debug:^13debug:$\ndebug:^0 FACTORY 0 0 0 0 0debug:$\ndebug:^1 FACTORY 1 0 2 5 0debug:$\ndebug:^2 FACTORY -1 4 1 0 0debug:$\ndebug:^3 FACTORY 0 0 0 0 0debug:$\ndebug:^4 FACTORY -1 3 0 0 0debug:$\ndebug:^5 FACTORY 1 5 2 0 0debug:$\ndebug:^6 FACTORY 0 6 2 0 0debug:$\ndebug:^7 FACTORY 1 11 1 0 0debug:$\ndebug:^8 FACTORY -1 7 1 0 0debug:$\ndebug:^15 TROOP -1 8 5 8 1debug:$\ndebug:^16 TROOP -1 4 6 7 1debug:$\ndebug:^18 TROOP -1 2 1 1 2debug:$\ndebug:^19 TROOP 1 7 1 3 1debug:$\nprotect 1 needed 0 mindestensEntfernt 2\nprotect 5 needed 1 mindestensEntfernt 1\nprotect 7 needed 0 mindestensEntfernt 2147483647\nnehme action: Update 7\n------Update 7\npossibleACtions leeer\n~~~Duration\u003d56\nUpdate 7\nRound: 7",
+            "view": " 11\n",
+            "keyframe": false,
+            "agentId": 0
+        },
+        {
+            "gameInformation": "",
+            "stdout": "WAIT\n",
+            "summary": "",
+            "view": " 12\n6 2 Player:5 Gegner:2\n19 1\n0\n0\n-1 0 0 0\n0 3 2 4\n1 5 1 0\n-1 0 0 0\n1 3 0 0\n1 1 2 0\n1 1 2 0\n0 3 2 0\n1 8 1 0\n",
+            "keyframe": true,
+            "agentId": 1
+        },
+        {
+            "gameInformation": "¤RED¤Can\u0027t send a troop to the factory it is issued from (1).§RED§\n",
+            "stdout": "MSG Player:4 Gegner:6;MOVE 1 1 1;MOVE 1 7 2\n",
+            "stderr": "debug:^10debug:$\ndebug:^0 FACTORY 0 0 0 0 0debug:$\ndebug:^1 FACTORY 1 3 2 4 0debug:$\ndebug:^2 FACTORY -1 5 1 0 0debug:$\ndebug:^3 FACTORY 0 0 0 0 0debug:$\ndebug:^4 FACTORY -1 3 0 0 0debug:$\ndebug:^5 FACTORY -1 1 2 0 0debug:$\ndebug:^6 FACTORY -1 1 2 0 0debug:$\ndebug:^7 FACTORY 1 3 2 0 0debug:$\ndebug:^8 FACTORY -1 8 1 0 0debug:$\ndebug:^18 TROOP -1 2 1 1 1debug:$\nprotect 1 needed 0 mindestensEntfernt 1\nprotect 7 needed 0 mindestensEntfernt 2147483647\npossibleACtions leeer\n~~~Duration\u003d56\nProtect Bomb 1\u003d\u003e1:1\nSupporte naheste Fabrik 1\u003d\u003e7:2\nRound: 8",
+            "view": " 13\n",
+            "keyframe": false,
+            "agentId": 0
+        },
+        {
+            "gameInformation": "",
+            "stdout": "BOMB 6 7\n",
+            "summary": "¤RED¤End reached§RED§\n",
+            "view": " 14 endReached\n0 2 Player:4 Gegner:6\n24 0\n0\n1\n20 1 6 7 3\n-1 0 0 0\n-1 2 2 3\n1 6 1 0\n-1 0 0 0\n1 3 0 0\n1 3 2 0\n1 3 2 0\n-1 3 2 0\n1 9 1 0\n",
+            "keyframe": true,
+            "agentId": 1
+        }
+    ],
+    "gameId": 595146785,
+    "refereeInput": "seed\u003d466249713\n",
+    "scores": [ 0.0, 24.0 ],
+    "ranks": [ 1, 0 ],
+    "tooltips": [ "{\"turn\":2,\"text\":\"$0 increased production of Factory 1\",\"event\":0}", "{\"turn\":4,\"text\":\"$1 sent a bomb from Factory 2 to Factory 1\",\"event\":1}", "{\"turn\":12,\"text\":\"$0 increased production of Factory 7\",\"event\":0}", "{\"turn\":14,\"text\":\"$1 sent a bomb from Factory 6 to Factory 7\",\"event\":1}", "{\"turn\":14,\"text\":\"$0 lost: Can\u0027t send a troop to the factory it is issued from (1).\",\"event\":0}" ]
+}

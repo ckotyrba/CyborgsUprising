@@ -62,7 +62,7 @@ namespace Player.Real.Tests
         [TestMethod()]
         public void DebugGameRemote()
         {
-            string gameSeed = "seed=419837463\n";
+            string gameSeed = "seed=119001932\n";
             var gameInputs = parseGameInput(readGameInput(GameJsonFromServer(gameSeed)));
 
             Console.SetIn(new StringReader(string.Join("\n", gameInputs)));

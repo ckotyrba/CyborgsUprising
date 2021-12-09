@@ -33,7 +33,6 @@ namespace Player
         public static List<effectiveTroopEntry> effectivePlayerTroops = new List<effectiveTroopEntry>();
         public static List<(Factory sourceFactory, Factory targetFactory, int neededCyborgs)> waitingFactories = new List<(Factory sourceFactory, Factory targetFactory, int neededCyborgs)>();
 
-        public static Stopwatch stopwatch = new Stopwatch();
         public static void Main(string[] args)
         {
             string[] inputs;
@@ -82,7 +81,6 @@ namespace Player
 
                     readField(entityId, entityType, arg1, arg2, arg3, arg4, arg5, factories);
                 }
-                stopwatch.Start();
 
                 //if (effectivePlayerTroops.Sum(ept => ept.troopCount) != troops.Where(tr => tr.Owner == Owner.Player).Sum(tr => tr.numbersOfCyborgs))
                 //    throw new InvalidProgramException($"effective Count != actual troop count");
@@ -184,13 +182,7 @@ namespace Player
                         }
                     }
 
-                    HashSet<Factory> factoriesToAttack = new HashSet<Factory>(factories.FactoryList);
-                    factoriesToAttack.UnionWith(factories.EnemyFactoriesAfterConquer());
-
-
-                    //neue variante in verteil szenario besser, protect funktioniert aber in schritt 26 nicht, weil fabrik 11 verliert
-                    //            alle anderen szenarien verlieren
-                    foreach (var factory in factoriesToAttack)
+                    foreach (var factory in factories.FactoryList)
                     {
                         var attack = Attack(factory);
                         if (attack != null)
@@ -198,32 +190,6 @@ namespace Player
                             possibleActions.Add(attack);
                         }
                     }
-
-                    /*
-
-                                        factoriesToAttack = new HashSet<Factory>(factories.FactoryList);
-
-                                        foreach (var factory in factoriesToAttack.Where(fac => fac.Owner == Owner.Empty || fac.Owner == Owner.Opponent).Where(fac => fac.productionRate > 0 || fac.numberOfTurnsForProduction > 0))
-                                        {
-                                            var attack = Attack(factory);
-                                            if (attack != null)
-                                            {
-                                                possibleActions.Add(attack);
-                                            }
-                                        }
-
-                                        if (factories.MyFactories.All(fac => fac.productionRate == 3))
-                                        {
-                                            foreach (var factory in factoriesToAttack.Where(fac => fac.Owner == Owner.Empty).Where(fac => factories.MinDistanceTo(fac, factories.MyFactories) < 10).Where(fac => fac.productionRate == 0))
-                                            {
-                                                var attack = Attack(factory);
-                                                if (attack != null)
-                                                {
-                                                    possibleActions.Add(attack);
-                                                }
-                                            }
-                                        }*/
-
 
                     if (possibleActions.Count == 0)
                     {
@@ -241,8 +207,7 @@ namespace Player
 
                     Console.Error.WriteLine("------" + action.ToString());
                 }
-                stopwatch.Stop();
-                Console.Error.WriteLine("~~~Duration=" + stopwatch.ElapsedMilliseconds);
+
                 /// ****** NEU
                 foreach (var playerFactory in factories.MyFactories)
                 {
@@ -1355,7 +1320,7 @@ namespace Player
                         if (k != target)
                             costViaNodeK += 0;
                         // maximiere hops, bei gleicher strecke
-                        if (costViaNodeK <= dist[source, target])
+                        if (costViaNodeK < dist[source, target])
                         {
                             // bevorzuge bei = und empty größte produktion zwischenstop
                             if (dist[source, target] == costViaNodeK)

@@ -515,7 +515,10 @@ namespace Player
                     if (bombAttacking != null || factoryToAttack.numberOfTurnsForProduction > 0)
                     {
                         // Schlage genau im produktion geht wieder moment zu
-                        if (distanceToTarget != factoryToAttack.numberOfTurnsForProduction + (bombAttacking != null ? bombAttacking.turnsToArrive : 0))
+                        int turnsToStartProduction = bombAttacking != null ? bombAttacking.turnsToArrive + 5 : factoryToAttack.numberOfTurnsForProduction;
+                        // wir müssen senden und vorher ankommen
+                        turnsToStartProduction -= 2;
+                        if (distanceToTarget != turnsToStartProduction)
                         {
                             continue;
                         }

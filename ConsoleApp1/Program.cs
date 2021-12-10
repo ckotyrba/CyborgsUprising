@@ -182,6 +182,7 @@ namespace Player
                         }
                     }
 
+
                     foreach (var factory in factories.FactoryList)
                     {
                         var attack = Attack(factory);
@@ -229,6 +230,9 @@ namespace Player
                         {
                             nearestFactoryNotFullList.RemoveAt(0);
                             var nextFactory = floydWarshall.Path(playerFactory, nearestFactoryNotFull, factories).First();
+                            // Mache keine Angriffe, die gegner nutzen könnten
+                            if (nextFactory.Owner == Owner.Empty && cyborgsToOffer < nextFactory.Cyborgs)
+                                break;
                             if (nearestFactoryNotFull.Owner == Owner.Player)
                             {
                                 // supporte nur gleich nahe
@@ -240,7 +244,7 @@ namespace Player
                                 cyborgsNeededForUpdate += CyborgsInTroops(troopsEnemyAttackingFactory(nearestFactoryNotFull));
                                 cyborgsNeededForUpdate = Math.Max(0, cyborgsNeededForUpdate);
 
-                                int cyborgsSent = Math.Min(playerFactory.CyborgsToOffer(), cyborgsNeededForUpdate);
+                                int cyborgsSent = Math.Min(cyborgsToOffer, cyborgsNeededForUpdate);
                                 var supportAction = new TroopAction("Supporte naheste Fabrik", playerFactory.Attack(nextFactory, cyborgsSent), nearestFactoryNotFull);
                                 pickedActions.Add(supportAction);
                                 supportAction.Apply();
@@ -252,7 +256,7 @@ namespace Player
                                 var attackAction = new TroopAction("Attackiere näheste Gegner " + nearestFactoryNotFull, playerFactory.Attack(nextFactory, playerFactory.CyborgsToOffer()), nearestFactoryNotFull);
                                 pickedActions.Add(attackAction);
                                 attackAction.Apply();
-                                continue;
+                                break;
                             }
                         }
                     }
@@ -507,6 +511,16 @@ namespace Player
                     int helpingEnemies = factoryToAttack.HelpingEnemiesForDistance(distanceToTarget);
                     int bombDestruction = BombDestructionInDistance(distanceToTarget, factoryToAttack);
 
+                    var bombAttacking = factoryToAttack.BombAttacking(Owner.Player);
+                    if (bombAttacking != null || factoryToAttack.numberOfTurnsForProduction > 0)
+                    {
+                        // Schlage genau im produktion geht wieder moment zu
+                        if (distanceToTarget != factoryToAttack.numberOfTurnsForProduction + (bombAttacking != null ? bombAttacking.turnsToArrive : 0))
+                        {
+                            continue;
+                        }
+                    }
+
                     int cyborgsToSent = Math.Min(cyborgsCanBeOffered, cyborgsNeeded + tempProductionRate + helpingEnemies - bombDestruction);
                     int cyborgsReduced = cyborgsToSent - tempProductionRate - helpingEnemies + bombDestruction;
 
@@ -586,14 +600,14 @@ namespace Player
         /**
          * Berechnet cyborg schaden für angreifer entfernung
          * */
-        private static int BombDestructionInDistance(int attackerDistance, Factory target)
+        public static int BombDestructionInDistance(int attackerDistance, Factory target)
         {
             foreach (var bomb in bombs)
             {
                 if (bomb.factoryTo != null && bomb.factoryTo == target)
                 {
-                    // +5 weil bombe 5 runden auf 0 setzt
-                    if (bomb.turnsToArrive <= attackerDistance + 5)
+                    // = weil erst los geschickt werden muss
+                    if (bomb.turnsToArrive <= attackerDistance)
                         return CyborgsDestroyedAfterBomb(bomb.factoryTo);
                 }
             }
@@ -975,7 +989,7 @@ namespace Player
             if (factoryTo == null)
             {
                 // Besitz
-                possibleTargets = factories.myFactoriesAfterConquer().Where(fac => fac.productionRate > 0).Select(fac => fac.Id).ToList();
+                possibleTargets = factories.MyFactories.Where(fac => fac.productionRate > 0).Select(fac => fac.Id).ToList(); //factories.myFactoriesAfterConquer().Where(fac => fac.productionRate > 0).Select(fac => fac.Id).ToList();
                 // TODO angreigbare
             }
         }
@@ -1522,6 +1536,8 @@ namespace Player
         {
             if (Owner == Owner.Empty)
                 return 0;
+            if (bombs.Any(bomb => bomb.factoryTo == this && bomb.turnsToArrive <= distance))
+                return 0;
             int cyborgsProduced = distance * this.productionRate * (numberOfTurnsForProduction == 0 ? 1 : 0);
             return cyborgsProduced;
         }
@@ -1542,11 +1558,11 @@ namespace Player
             int minDistanceEnemy = factoryNearestEnemy != null ? this.Distance(factoryNearestEnemy) : int.MaxValue;
 
             int helpingEnemy = 0;
-            // falls gegner gleich nah dran wie wir, addiere gegner
-            if (minDistanceEnemy == minDistancePlayer)
-            {
-                helpingEnemy += factoryNearestEnemy.Cyborgs;
-            }
+            /*      // falls gegner gleich nah dran wie wir, addiere gegner
+                  if (minDistanceEnemy == minDistancePlayer)
+                  {
+                      helpingEnemy += factoryNearestEnemy.Cyborgs;
+                  }*/
 
             int result = 0;
             if (this.Owner == Owner.Player)
@@ -1714,6 +1730,16 @@ namespace Player
         public int WillFallIn()
         {
             return SimulateAttacks().fallIn;
+        }
+
+        public Bomb BombAttacking(Owner owner)
+        {
+            foreach (var bomb in bombs.Where(bomb => bomb.owner == owner))
+            {
+                if (bomb.factoryTo == this)
+                    return bomb;
+            }
+            return null;
         }
     }
 

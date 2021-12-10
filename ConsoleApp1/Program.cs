@@ -213,7 +213,7 @@ namespace Player
                 foreach (var playerFactory in factories.MyFactories)
                 {
                     ///  Warte wenn nicht prod=3
-                    if (playerFactory.productionRate != 3 && playerFactory.numberOfTurnsForProduction == 0)
+                    if (playerFactory.productionRate != 3 || playerFactory.numberOfTurnsForProduction > 0)
                         continue;
 
                     var nearestFactoryNotFullList = factories.FactoryList

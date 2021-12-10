@@ -34,7 +34,8 @@ namespace Player.Real.Tests
                 "seed=119001932\n",   /// total katastrophe
                 "seed=293889482\n", // (y)
                 "seed=542656354\n", // verlust weil zu weit gespreaded
-                "seed=419837463\n"  
+                "seed=419837463\n",
+                "seed=124539900\n"  // gibt vorteilsposition auf
             };
 
 
@@ -62,7 +63,7 @@ namespace Player.Real.Tests
         [TestMethod()]
         public void DebugGameRemote()
         {
-            string gameSeed = "seed=119001932\n";
+            string gameSeed = "seed=124539900\n";
             var gameInputs = parseGameInput(readGameInput(GameJsonFromServer(gameSeed)));
 
             Console.SetIn(new StringReader(string.Join("\n", gameInputs)));

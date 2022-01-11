@@ -35,7 +35,10 @@ namespace Player.Real.Tests
                 "seed=293889482\n", // (y)
                 "seed=542656354\n", // verlust weil zu weit gespreaded
                 "seed=419837463\n",
-                "seed=124539900\n"  // gibt vorteilsposition auf
+                "seed=124539900\n",  // gibt vorteilsposition auf
+                "seed=870425147\n", // verlust obwohl gut aussieht
+                "seed=925919518\n",  // timeout oder verlust
+                 "seed=403124870\n"  // Schicke waiting zu früh => gegner gewinnt sie  ab round 10
             };
 
 
@@ -63,7 +66,8 @@ namespace Player.Real.Tests
         [TestMethod()]
         public void DebugGameRemote()
         {
-            string gameSeed = "seed=124539900\n";
+           // string gameSeed = "seed=870425147\n";  hier muss simulator helpingEnemies angeschaut werden
+            string gameSeed = "seed=403124870\n";
             var gameInputs = parseGameInput(readGameInput(GameJsonFromServer(gameSeed)));
 
             Console.SetIn(new StringReader(string.Join("\n", gameInputs)));
@@ -128,7 +132,7 @@ namespace Player.Real.Tests
             json.programmingLanguageId = "C#";
             json.multi = multi;
             string payload = $"[\"775977482a81ca4fc246f300d2146c20118ed07\",{json} ]";
-            
+
 
             var content = new StringContent(payload, Encoding.UTF8, "application/json");
             var response = client.PostAsync("https://www.codingame.com/services/TestSession/play", content).Result;

@@ -11,7 +11,7 @@ using static AssertNet.Assertions;
 namespace Player.Tests
 {
     [TestClass()]
-    public class RemoteTest
+    public class PlayerTests
     {
 
         [TestMethod()]
@@ -22,6 +22,18 @@ namespace Player.Tests
 
             AssertThat(a.Intersect(b)).HasSize(1);
         }
+
+        [TestMethod()]
+        public void factoryEqualsInTroop()
+        {
+            var factory1 = new Factory(1, Owner.Player, 1, 1, 1);
+            var factory2 = new Factory(1, Owner.Player, 1, 1, 1);
+
+            var troopA = new Troop(Owner.Player, factory1, factory2, 2, 10, null);
+            
+            AssertThat(troopA.factoryFrom).IsEqualTo(factory2);
+        }
+
 
         [TestMethod()]
         public void TroopEquals()

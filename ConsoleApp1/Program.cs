@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using static Player.Player;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 
 /**
  * Auto-generated code below aims at helping you parse
@@ -32,7 +33,7 @@ namespace Player
 
         public static List<effectiveTroopEntry> effectivePlayerTroops = new List<effectiveTroopEntry>();
         public static List<(Factory sourceFactory, Factory targetFactory, int neededCyborgs)> waitingFactories = new List<(Factory sourceFactory, Factory targetFactory, int neededCyborgs)>();
-
+        static Stopwatch stopwatch;
         public static void Main(string[] args)
         {
             string[] inputs;
@@ -52,6 +53,7 @@ namespace Player
             // game loop
             while (true)
             {
+                stopwatch = Stopwatch.StartNew();
                 Round++;
                 Console.Error.WriteLine("Round: " + Round);
                 for (int i = effectivePlayerTroops.Count - 1; i >= 0; i--)
@@ -86,7 +88,6 @@ namespace Player
                 //    throw new InvalidProgramException($"effective Count != actual troop count");
 
                 bombs.RemoveAll(bomb => !bombIds.Contains(bomb.Id));
-
 
                 printStates();
 
@@ -125,20 +126,17 @@ namespace Player
                 for (int i = waitingFactories.Count - 1; i >= 0; i--)
                 {
                     var waitingFactoryEntry = waitingFactories[i];
+                    var sourceFactory = factories.getFactoryByEntityId(waitingFactoryEntry.sourceFactory.Id);
                     // sammlung reicht schon => schicke troops und nehme fabrik aus wartend
-                    if (waitingFactoryEntry.neededCyborgs == waitingFactoryEntry.sourceFactory.Cyborgs)
+                    if (sourceFactory.Cyborgs >= waitingFactoryEntry.neededCyborgs)
                     {
-                        var action = new TroopAction("Angriff von Waiting",
-                            waitingFactoryEntry.sourceFactory.Attack(waitingFactoryEntry.targetFactory, waitingFactoryEntry.neededCyborgs),
-                            waitingFactoryEntry.targetFactory);
-                        action.Apply();
-                        pickedActions.Add(action);
+                        // ob wirklich geschickt wird, wird in normalem attack zyklus entschieden
                         waitingFactories.RemoveAt(i);
                     }
                     // sammlung reicht noch nicht => setze verfügbare auf 0
                     else
                     {
-                        waitingFactoryEntry.sourceFactory.Cyborgs = 0;
+                        sourceFactory.Cyborgs = 0;
                     }
 
                 }
@@ -149,7 +147,6 @@ namespace Player
                 {
                     Console.Error.WriteLine(bomb);
                 }
-                BombDetection(pickedActions);
                 BombSuggestion();
                 // bomb
                 SendBombs(pickedActions);
@@ -205,16 +202,23 @@ namespace Player
 
                     action.Apply();
                     pickedActions.Add(action);
+                    Console.Error.WriteLine("Duration : " + stopwatch.ElapsedMilliseconds);
 
                     Console.Error.WriteLine("------" + action.ToString());
                 }
 
+
                 /// ****** NEU
                 foreach (var playerFactory in factories.MyFactories)
                 {
+
+                    Console.Error.WriteLine("Duration neu: " + stopwatch.ElapsedMilliseconds);
+
                     ///  Warte wenn nicht prod=3
-                    if (playerFactory.productionRate != 3 || playerFactory.numberOfTurnsForProduction > 0)
+                    // wenn kein nachbar enemy ist, sind wir sicher
+                    if (playerFactory.productionRate != 3 || (playerFactory.NeighborsOrderedByDistance().Any(fac => fac.Owner == Owner.Opponent) && playerFactory.numberOfTurnsForProduction > 0))
                         continue;
+
 
                     var nearestFactoryNotFullList = factories.FactoryList
                         .OrderBy(fac => fac.Distance(playerFactory))
@@ -223,8 +227,8 @@ namespace Player
                     int cyborgsToOffer = playerFactory.CyborgsToOffer();
                     while (cyborgsToOffer > 0 && nearestFactoryNotFullList.Count > 0)
                     {
-                        var nearestFactoryNotFull = nearestFactoryNotFullList.FirstOrDefault();
 
+                        var nearestFactoryNotFull = nearestFactoryNotFullList.FirstOrDefault();
                         ///  greife naheste rand gegnerfabrik oder empty (erst gegner) an über routenplaner
                         if (nearestFactoryNotFull != null)
                         {
@@ -242,6 +246,7 @@ namespace Player
                                 int cyborgsNeededForUpdate = productionDiff * 10 - nearestFactoryNotFull.Cyborgs;
                                 cyborgsNeededForUpdate -= CyborgsInTroops(troopsPlayerAttackingFactory(nearestFactoryNotFull));
                                 cyborgsNeededForUpdate += CyborgsInTroops(troopsEnemyAttackingFactory(nearestFactoryNotFull));
+                                cyborgsNeededForUpdate -= nearestFactoryNotFull.ProducedInDistance(playerFactory);
                                 cyborgsNeededForUpdate = Math.Max(0, cyborgsNeededForUpdate);
 
                                 int cyborgsSent = Math.Min(cyborgsToOffer, cyborgsNeededForUpdate);
@@ -253,7 +258,13 @@ namespace Player
                             }
                             else if (nearestFactoryNotFull.Owner == Owner.Opponent)
                             {
-                                var attackAction = new TroopAction("Attackiere näheste Gegner " + nearestFactoryNotFull, playerFactory.Attack(nextFactory, playerFactory.CyborgsToOffer()), nearestFactoryNotFull);
+                                // wir attackieren jetzt den nächsten gegner. wenn wir aber direkte nachbar gegner haben, nehme höchste prod
+                                var directEnemy = playerFactory.NeighborsOrderedByDistance(Owner.Opponent).OrderBy(fac => fac.productionRate).ThenBy(fac => fac.DirectDistance(playerFactory)).FirstOrDefault();
+                                if (directEnemy != null)
+                                {
+                                    nextFactory = directEnemy;
+                                }
+                                var attackAction = new TroopAction("Attackiere näheste Gegner " + nearestFactoryNotFull, playerFactory.Attack(nextFactory, cyborgsToOffer), nearestFactoryNotFull);
                                 pickedActions.Add(attackAction);
                                 attackAction.Apply();
                                 break;
@@ -262,6 +273,8 @@ namespace Player
                     }
                 }
 
+                BombDetection(pickedActions);
+
                 if (pickedActions.Count == 0)
                 {
                     Console.WriteLine("WAIT");
@@ -269,7 +282,8 @@ namespace Player
                 }
                 else
                 {
-                    var output = String.Join(";", pickedActions.Select(action => action.Output()));
+                    // waiting troops können momentan auch nichts zurück gaben
+                    var output = String.Join(";", pickedActions.Select(action => action.Output()).Where(str => str != ""));
                     Console.WriteLine(output);
                     foreach (var action in pickedActions)
                     {
@@ -298,7 +312,8 @@ namespace Player
                     foreach (var supportFactory in ownFactoriesSameDistThanTroop)
                     {
                         int enemyAttackingFactory = CyborgsInTroops(troopsEnemyAttackingFactory(factoryToProtect));
-                        int helpingEnemys = factoryToProtect.HelpingEnemiesForDistance(supportFactory.Distance(factoryToProtect));
+                        int helpingEnemys = factoryToProtect.HelpingEnemiesForDistance(new Simulator(factories.FactoryList, troops, bombs, distances).SimulateMove(),
+                            supportFactory.Distance(factoryToProtect));
                         int playerSupportAfterBomb = CyborgsInTroops(troopsPlayerAttackingFactory(factoryToProtect).Where(troop => troop.turnsToArrive >= troopDistToTarget));
                         int neededCyborgs = Math.Max(0, enemyAttackingFactory + helpingEnemys - playerSupportAfterBomb);
                         if (neededCyborgs == 0)
@@ -396,18 +411,6 @@ namespace Player
             return false;
         }
 
-        private static List<UpdateAction> UpgradeAllPossible()
-        {
-            var result = new List<UpdateAction>();
-            foreach (var factory in factories.MyFactories)
-            {
-                var updateAction = factory.Upgrade();
-                if (updateAction != null)
-                    result.Add(updateAction);
-            }
-            return result;
-        }
-
         private static List<UpdateAction> UpgradeOhneAnwendung()
         {
             var result = new List<UpdateAction>();
@@ -455,8 +458,10 @@ namespace Player
         {
             if (SrcFactoryAlreadyInWaitingList(troop))
             {
-                var entry = waitingFactories.Find(entry => entry.sourceFactory == troop.factoryFrom);
+                int index = waitingFactories.FindIndex(entry => entry.sourceFactory.Equals(troop.factoryFrom));
+                var entry = waitingFactories[index];
                 entry.neededCyborgs += troop.numbersOfCyborgs;
+                waitingFactories[index] = entry;
             }
             else
             {
@@ -465,14 +470,14 @@ namespace Player
             troop.factoryFrom.Cyborgs = 0;
         }
 
-        private static bool SrcFactoryAlreadyInWaitingList(Troop troop)
+        public static bool SrcFactoryAlreadyInWaitingList(Troop troop)
         {
-            return waitingFactories.Any(entry => entry.sourceFactory == troop.factoryFrom);
+            return waitingFactories.Any(entry => entry.sourceFactory.Equals(troop.factoryFrom));
         }
 
         private static TroopAction Attack(Factory factoryToAttack)
         {
-            if (factoryToAttack.Owner != Owner.Player)
+            if (factoryToAttack.Owner != Owner.Player || factoryToAttack.WillFallIn() != int.MaxValue)
             {
                 bool zeroProductionFactory = factoryToAttack.productionRate == 0;
                 List<Troop> troops = new List<Troop>();
@@ -491,6 +496,7 @@ namespace Player
                     cyborgsNeeded += 9;
                 }
 
+                Simulator simulator = new Simulator(factories.FactoryList, troops, bombs, distances).SimulateMove();
                 // ersetze nach jedem angriff fabrik mit ihrer wartenden ausgabe und erhöhter distanz. 
                 // ersetzen: distanz zu factoryToAttack auf +1 canoffer: eigene produktion  angriff kann nicht sein weil toOffer>0
                 // schaue dann nochmal von vorne nach niedrigster distanz
@@ -503,12 +509,22 @@ namespace Player
 
                     // ATTACK ------
                     int tempProductionRate = factoryToAttack.ProducedInDistance(nearestFactoryWithCapacity);
+                    if (factoryToAttack.Owner == Owner.Player)
+                    {
+                        int fallIn = factoryToAttack.WillFallIn();
+                        // wechsel kostet gegner auch deswegen fallin +1
+                        int productionRatePlayer = factoryToAttack.ProducedInDistance(Math.Min(nearestFactoryWithCapacity.Distance(factoryToAttack), fallIn + 1));
+                        tempProductionRate -= productionRatePlayer;
+                    }
+
+                    //int productionRateEnemy = factoryToAttack.ProducedInDistance(Math.Max(0, nearestFactoryWithCapacity.DirectDistance(factoryToAttack) - fallIn));
+                    //int tempProductionRate = productionRateEnemy - productionRatePlayer;
                     int cyborgsCanBeOffered = nearestFactoryWithCapacity.CyborgsToOffer();
 
                     if (tempProductionRate > cyborgsCanBeOffered)
                         continue;
                     int distanceToTarget = nearestFactoryWithCapacity.Distance(factoryToAttack);
-                    int helpingEnemies = factoryToAttack.HelpingEnemiesForDistance(distanceToTarget);
+                    int helpingEnemies = factoryToAttack.HelpingEnemiesForDistance(simulator, distanceToTarget);
                     int bombDestruction = BombDestructionInDistance(distanceToTarget, factoryToAttack);
 
                     var bombAttacking = factoryToAttack.BombAttacking(Owner.Player);
@@ -540,7 +556,7 @@ namespace Player
                     }
                     // Replace -----
                     var replacement = ReplaceFactoryWithWaiting(nearestFactoryWithCapacity, factoryToAttack);
-                    if (replacement.distance < realMaxDist && replacement.factory.CyborgsToOffer() > 0)
+                    if (replacement.distance < Math.Max(10, realMaxDist * 2) && replacement.factory.CyborgsToOffer() > 0)
                         NeighborsOrderedByDistance.Add(replacement);
                 }
 
@@ -624,11 +640,11 @@ namespace Player
                 List<Troop> result = new List<Troop>();
 
                 int cyborgsNeeded = factoryToProtect.EffectiveCyborgsToBeat();
-                int minArrive = factoryToProtect.WillFallIn();
+                int turnsWhenFall = factoryToProtect.WillFallIn();
                 if (factoryToProtect.productionRate == 0 && factoryToProtect.numberOfTurnsForProduction == 0)
                     cyborgsNeeded += 10;
 
-                Console.Error.WriteLine($"protect {factoryToProtect} needed {cyborgsNeeded} mindestensEntfernt {minArrive}");
+                Console.Error.WriteLine($"protect {factoryToProtect} needed {cyborgsNeeded} mindestensEntfernt {turnsWhenFall}");
                 if (cyborgsNeeded == 0)
                     return new List<Troop>();
 
@@ -637,7 +653,7 @@ namespace Player
                 foreach (var nearestFactoryWithCapacity in nearestFactories)
                 {
                     //+1 weil im ersten schritt gesendet wird
-                    if (minArrive < nearestFactoryWithCapacity.Distance(factoryToProtect) + 1)
+                    if (turnsWhenFall < nearestFactoryWithCapacity.Distance(factoryToProtect) + 1)
                         continue;
                     int cyborgsCanBeOffered = nearestFactoryWithCapacity.CyborgsToOffer();
                     int cyborgsToSent = Math.Min(cyborgsCanBeOffered, cyborgsNeeded);
@@ -805,11 +821,6 @@ namespace Player
                 return FactoryList.FirstOrDefault(factory => factory.Id == entityId);
             }
 
-            public IOrderedEnumerable<Factory> MyFactoriesGetsAttacked()
-            {
-                return factories.MyFactories.Where(fac => fac.TroopsAttacking() != 0).OrderByDescending(fac => fac.productionRate);
-            }
-
             public IOrderedEnumerable<Factory> NearestFactoriesToPlayer()
             {
                 return FactoryList
@@ -829,6 +840,12 @@ namespace Player
                 }
                 return result;
             }
+
+            public int ProductionRateTotal()
+            {
+                return FactoryList.Sum(fac => fac.productionRate);
+            }
+
 
             public int CyborgCount(Owner owner)
             {
@@ -855,12 +872,12 @@ namespace Player
 
             public int MinDirectDistanceTo(Factory factory, List<Factory> pool)
             {
-                if (pool.Count() == 0)
+                var relevantPool = pool.Where(fac => fac.Id != factory.Id);
+                if (relevantPool.Count() == 0)
                     return int.MaxValue;
 
                 // skip target factory
-                return pool
-                    .Where(fac => fac.Id != factory.Id)
+                return relevantPool
                     .Select(fac => fac.DirectDistance(factory))
                     .OrderBy(distance => distance)
                     .First();
@@ -877,7 +894,6 @@ namespace Player
                 var simulator = new Simulator(FactoryList, troops, bombs, distances).SimulateMove();
                 return simulator.FactoryIdsOfOwner(Owner.Opponent);
             }
-
         }
 
 
@@ -1058,7 +1074,24 @@ namespace Player
 
         private string outputTroop(Troop troop) => $"MOVE {troop.factoryFrom} {troop.factoryTo} {troop.numbersOfCyborgs}";
 
-        public override string Output() => string.Join(";", troops.Where(tro => !(tro is WaitingTroop)).Select(tro => outputTroop(tro)));
+        private List<int> srcFactoryWaitingInThisAction()
+        {
+            List<int> result = new List<int>();
+            foreach (var troop in troops)
+            {
+                if (troop is WaitingTroop)
+                {
+                    result.Add(troop.factoryFrom.Id);
+                }
+            }
+            return result;
+        }
+
+        public override string Output()
+        {
+            var validTroops = troops.Where(tro => !srcFactoryWaitingInThisAction().Contains(tro.factoryFrom.Id)).ToList();
+            return string.Join(";", validTroops.Select(tro => outputTroop(tro)));
+        }
 
         private string toStringTroop(Troop troop) => $"{base.Title} {troop.factoryFrom}=>{targetFactory}:{troop.numbersOfCyborgs}";
 
@@ -1473,7 +1506,9 @@ namespace Player
     {
         public int Id { get; }
         public Owner Owner { get; set; }
+
         public int Cyborgs { get; set; }
+
         public int productionRate { get; set; }
         public int numberOfTurnsForProduction { get; set; }
 
@@ -1547,63 +1582,29 @@ namespace Player
 
         public int EffectiveCyborgsToBeat()
         {
-            var troopsEnemy = troopsEnemyAttackingFactory(this);
-            int troopsPlayer = CyborgsInTroops(troopsPlayerAttackingFactory(this)); //Player.effectivePlayerTroops                .Where(entry => entry.effectiveTarget.Equals(this))                .Sum(entry => entry.troopCount);
-            int waitingTroopsPlayer = waitingFactories.Where(entry => entry.targetFactory == this).Sum(entry => entry.neededCyborgs);
-            troopsPlayer += waitingTroopsPlayer;
-            int troopsOtherOwner = CyborgsInTroops(troopsEnemy);
-
-
-            Factory factoryNearestPlayer = factories.FactoriesOrderedByDistanceTo(this, Owner.Player).FirstOrDefault();
-            Factory factoryNearestEnemy = factories.FactoriesOrderedByDistanceTo(this, Owner.Opponent).FirstOrDefault();
-
-            int minDistancePlayer = factoryNearestPlayer != null ? this.Distance(factoryNearestPlayer) : 0;
-            int minDistanceEnemy = factoryNearestEnemy != null ? this.Distance(factoryNearestEnemy) : int.MaxValue;
-
-            int helpingEnemy = 0;
-            /*      // falls gegner gleich nah dran wie wir, addiere gegner
-                  if (minDistanceEnemy == minDistancePlayer)
-                  {
-                      helpingEnemy += factoryNearestEnemy.Cyborgs;
-                  }*/
-
-            int result = 0;
-            if (this.Owner == Owner.Player)
+            Factory futureFactory = Simulator.simulateAllMovesFor(this);
+            if (futureFactory.Owner == Owner.Player)
             {
-                if (troopsEnemy != null && troopsEnemy.Count > 0)
-                    troopsPlayer += this.ProducedInDistance(troopsEnemyAttackingFactory(this).Min(Troop => Troop.turnsToArrive));
-
-                result = Math.Max(0, troopsOtherOwner + helpingEnemy - (troopsPlayer + Cyborgs));
+                return 0;
             }
             else
             {
-                //+1 weil wir die fabrik einnehmen müssen
-                result = (Cyborgs + 1) + troopsOtherOwner + helpingEnemy - troopsPlayer;
+                return futureFactory.Cyborgs + 1;
             }
-
-            //result = Math.Max(0, result);
-            return result;
-        }
-
-
-        public int RelativeCyborgsToBeatOffset(Factory from)
-        {
-            int producedCyborgs = this.ProducedInDistance(from);
-            int helpingEnemies = this.HelpingEnemiesForDistance(from.Distance(this));
-            if (Owner == Owner.Player)
-            {
-                return helpingEnemies - producedCyborgs;
-            }
-            return producedCyborgs + helpingEnemies;
         }
 
         public int CyborgsToOffer()
         {
+            if (factories.ProductionRate(Owner.Player) * 1.0 > factories.ProductionRateTotal() * 0.5)
+            {
+                return Cyborgs;
+            }
             return SimulateAttacks().cyborgsLeft;
         }
 
         private (int cyborgsLeft, int fallIn) SimulateAttacks()
         {
+
             int result = Cyborgs;
             int currentCyborgs = Cyborgs;
             int maxTurns = Player.troopsEnemyAttackingFactory(this).Max(troop => (int?)troop.turnsToArrive) ?? 0;
@@ -1650,7 +1651,7 @@ namespace Player
                 maxTurns--;
                 turn++;
             }
-            return (result, turn);
+            return (result, int.MaxValue);
         }
 
 
@@ -1672,44 +1673,40 @@ namespace Player
         }
 
 
-        public double CyborgsNeededPerProductionIncrease(Factory from)
+        // simulator ist ausen, weil er performance frisst und wiederverwendet werden muss
+        internal int HelpingEnemiesForDistance(Simulator simulator, int distance)
         {
-            double effectiveCyborgs = this.EffectiveCyborgsToBeat() + RelativeCyborgsToBeatOffset(from);
-            double result;
-
-            if (productionRate == 0)
-            {
-                effectiveCyborgs += 10;
-                result = 1 / effectiveCyborgs;
-            }
-            else
-            {
-                result = productionRate / effectiveCyborgs;
-            }
-            return result;
-        }
-
-
-        internal int HelpingEnemiesForDistance(int distance)
-        {
-            int result = 0;
-            var possibleEnemyFactories = Player.factories.FactoriesOrderedByDistanceTo(this, Owner.Opponent).Where(fac => fac.Distance(this) <= distance);
+            // direct
+            var possibleEnemyFactories = Player.factories.FactoriesOrderedByDistanceTo(this, Owner.Opponent).Where(fac => fac.Distance(this) < distance);
+            var futurePossibleEnemyFactories = simulator.FactoryIdsOfOwner(Owner.Opponent).Where(fac => fac.Distance(this) < distance);
+            Dictionary<int, int> cyborgsPerFactory = new Dictionary<int, int>();
             foreach (var factory in possibleEnemyFactories)
             {
-                result += factory.Cyborgs;
-                result += factory.ProducedInDistance(distance - factory.Distance(this));
+                int cyborgsToOffer = 0;
+                cyborgsToOffer += factory.Cyborgs;
+                cyborgsToOffer += factory.ProducedInDistance(distance - factory.Distance(this));
+                cyborgsPerFactory.Add(factory.Id, cyborgsToOffer);
             }
 
             // indirekte truppen die noch unterwegs sind
-            var simulator = new Simulator(factories.FactoryList, troops, bombs, distances).SimulateMove();
-            foreach (var futureFactory in simulator.FactoryIdsOfOwner(Owner.Opponent).Where(fac => fac.Distance(this) < distance))
+            foreach (var futureFactory in futurePossibleEnemyFactories)
             {
                 int turnsNeededToConquer = simulator.TurnsToCaptureFactory(futureFactory);
+                int cyborgsToOffer = futureFactory.Cyborgs;
                 if (turnsNeededToConquer + futureFactory.Distance(this) < distance)
-                    result += futureFactory.Cyborgs;
+                {
+                    if (cyborgsPerFactory.ContainsKey(futureFactory.Id))
+                    {
+                        cyborgsPerFactory[futureFactory.Id] += Math.Max(0, cyborgsPerFactory[futureFactory.Id] - futureFactory.Cyborgs);
+                    }
+                    else
+                    {
+                        cyborgsPerFactory.Add(futureFactory.Id, futureFactory.Cyborgs);
+                    }
+                }
             }
 
-            return result;
+            return cyborgsPerFactory.Sum(entry => entry.Value);
         }
 
         public UpdateAction Upgrade()
@@ -1764,6 +1761,13 @@ namespace Player
             {
                 turnsToCaptureFactory.Add(factory, 0);
             }
+        }
+
+        public static Factory simulateAllMovesFor(Factory factoryToSimulate)
+        {
+            var simulator = new Simulator(new List<Factory>() { factoryToSimulate }, Player.troops.Where(tr => tr.factoryTo.Equals(factoryToSimulate)).ToList(), Player.bombs, Player.distances);
+            simulator.SimulateMove();
+            return simulator.getFactory(factoryToSimulate.Id);
         }
 
         private Troop copyTroopWithNewRefs(Troop toCopy)

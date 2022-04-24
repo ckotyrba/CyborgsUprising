@@ -209,9 +209,14 @@ namespace Player
                 /// ****** NEU
                 foreach (var playerFactory in factories.MyFactories)
                 {
-                    ///  Warte wenn nicht prod=3, überspringe 0er
+                    ///  Warte wenn nicht prod=3, überspringe 0er außer alle nachbarn gehören uns
                     if (playerFactory.productionRate != 3 && playerFactory.productionRate != 0)
                         continue;
+                    if (playerFactory.productionRate == 0)
+                    {
+                        if (playerFactory.NeighborsOrderedByDistance().All(fac => fac.Owner == Owner.Player))
+                            continue;
+                    }
 
                     var nearestFactoryNotFullList = factories.FactoryList
                         .OrderBy(fac => fac.Distance(playerFactory))

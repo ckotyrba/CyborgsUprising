@@ -67,7 +67,7 @@ namespace Player.Real.Tests
         public void DebugGameRemote()
         {
            // string gameSeed = "seed=870425147\n";  hier muss simulator helpingEnemies angeschaut werden
-            string gameSeed = "seed=403124870\n";
+            string gameSeed = "seed=906171571\n";
             var gameInputs = parseGameInput(readGameInput(GameJsonFromServer(gameSeed)));
 
             Console.SetIn(new StringReader(string.Join("\n", gameInputs)));
